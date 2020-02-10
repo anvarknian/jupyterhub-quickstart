@@ -7,6 +7,7 @@ from kubernetes.config.incluster_config import load_incluster_config
 from kubernetes.client.api_client import ApiClient
 from kubernetes.client.rest import ApiException
 from openshift.dynamic import DynamicClient
+from oauthenticator.github import GitHubOAuthenticator
 
 # Helper function for doing unit conversions or translations if needed.
 
@@ -156,8 +157,8 @@ c.JupyterHub.hub_connect_ip = application_name
 
 c.ConfigurableHTTPProxy.api_url = 'http://127.0.0.1:8082'
 
-c.Spawner.start_timeout = 120
-c.Spawner.http_timeout = 60
+c.Spawner.start_timeout = 180
+c.Spawner.http_timeout = 120
 
 c.KubeSpawner.port = 8080
 
@@ -169,8 +170,62 @@ c.KubeSpawner.fs_gid = os.getuid()
 c.KubeSpawner.extra_annotations = {
     "alpha.image.policy.openshift.io/resolve-names": "*"
 }
+c.JupyterHub.authenticator_class = GitHubOAuthenticator
+
+c.GitHubOAuthenticator.oauth_callback_url = 'https://jupyterhub-jupyterhub.130.193.37.148.nip.io/hub/oauth_callback'
+c.GitHubOAuthenticator.client_id = '22f98aedc3395f190238'
+c.GitHubOAuthenticator.client_secret = '64a939cbf73a5f18c89533a1be4cd57ec7e28124'
+
+c.Authenticator.admin_users = {'anvarknian'}
+c.Authenticator.whitelist = {'user1', 'user2', 'user3', 'user4'}
 
 c.KubeSpawner.cmd = ['start-singleuser.sh']
+c.KubeSpawner.environment = { 'JUPYTER_ENABLE_LAB': 'true' }
+c.KubeSpawner.profile_list = [
+    {
+        'display_name': 'Jupyter Project - Minimal Notebook',
+        'default': True,
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/minimal-notebook:latest',
+            'supplemental_gids': [100]
+        }
+    },
+    {
+        'display_name': 'Jupyter Project - Scipy Notebook',
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/scipy-notebook:latest',
+            'supplemental_gids': [100]
+        }
+    },
+    {
+        'display_name': 'Jupyter Project - Tensorflow Notebook',
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/tensorflow-notebook:latest',
+            'supplemental_gids': [100]
+        },
+    },
+    {
+        'display_name': 'Jupyter Project - R Notebook',
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/r-notebook:latest',
+            'supplemental_gids': [100]
+        }
+    },
+    {
+        'display_name': 'Jupyter Project - PySpark Notebook',
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/pyspark-notebook:latest',
+            'supplemental_gids': [100]
+        }
+    },
+    {
+        'display_name': 'Jupyter Project - All Spark Notebook',
+        'kubespawner_override': {
+            'image_spec': 'docker.io/jupyter/all-spark-notebook:latest',
+            'supplemental_gids': [100]
+        },
+    }
+]
 
 c.KubeSpawner.pod_name_template = '%s-nb-{username}' % application_name
 
